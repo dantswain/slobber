@@ -1,0 +1,11 @@
+GEM
+  specs:
+    daemons (1.1.8)
+    rb-appscript (0.6.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  daemons
+  rb-appscript
