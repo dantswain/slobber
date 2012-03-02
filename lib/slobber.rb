@@ -7,6 +7,9 @@ module Slobber
   class Terminal
     Appscript::app('Terminal').launch
 
+    attr_reader :window
+    attr_reader :tab
+
     def initialize window=nil, tab=nil
       if window.nil?
         window, tab = self.class.new_tab_new_window
@@ -30,6 +33,11 @@ module Slobber
       @window.selected_tab.set(@tab)
     end
 
+    def do_script script, bring_front=false
+      to_front if bring_front
+      self.class.appscript.do_script(script, :in => @tab)
+    end
+
     def method_missing(meth, *args, &block)
       if @tab.respond_to?(meth)
         @tab.send(meth, *args, &block)
@@ -40,6 +48,31 @@ module Slobber
 
     def new_tab_this_window
       self.class.new_tab_in @window
+    end
+
+    def keystroke key, options=Hash.new
+      to_front
+      self.class.keystroke key, options
+    end
+
+    def busy?
+      @tab.busy.get
+    end
+
+    def prompt
+      return nil if busy?
+      @tab.contents.get.strip.split("\n").last
+    end
+    
+    def last_result
+      return nil if busy?
+      @tab.contents.get.strip.split(prompt).last.strip.partition("\n").last
+    end
+
+    def pwd
+      return nil if busy?
+      do_script("pwd")
+      last_result
     end
 
     def self.current_window
